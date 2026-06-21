@@ -24,28 +24,37 @@ import bot.clip as clip
 
 
 async def start(update, context):
-    await context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=(
-            "<b>AutoCut - AI Video Clipper</b>\n\n"
-            "<b>Features:</b>\n"
-            "- AI-powered highlight detection (Whisper + GPT)\n"
-            "- Non-linear clips — best moments first\n"
-            "- Variable length — 15-60s based on content\n"
-            "- 9:16 smart crop for Shorts/Reels\n"
-            "- YouTube SEO (title, description, hashtags)\n"
-            "- Quality selection (480p / 720p / 1080p / 4K)\n\n"
-            "<b>Auto Mode</b> — Send a YouTube link, AI finds the best clips\n\n"
-            "<b>Manual Mode</b> — Send link with timestamps for a custom clip\n\n"
-            "<b>Format:</b>\n"
-            "<code>&lt;URL&gt; &lt;start&gt; &lt;end&gt;</code>\n\n"
-            "<b>Examples:</b>\n"
-            "<code>https://youtu.be/dQw4w9WgXcQ</code>  (auto)\n"
-            "<code>https://youtu.be/dQw4w9WgXcQ 1:30 2:45</code>  (manual)\n\n"
-            "Times: <code>M:SS</code> | <code>MM:SS</code> | <code>HH:MM:SS</code>"
-        ),
-        parse_mode='html'
+    video_path = os.path.join(os.path.dirname(__file__), '..', 'media', 'welcome.mp4')
+    text = (
+        "✂️ <b>AutoCut - AI Video Clipper</b>\n\n"
+        "🧠 <b>AI-powered highlight detection</b> (Whisper + GPT)\n"
+        "🎯 <b>Non-linear clips</b> — best moments first\n"
+        "⏱️ <b>Variable length</b> — 15-60s based on content\n"
+        "📱 <b>9:16 smart crop</b> for Shorts/Reels\n"
+        "📝 <b>YouTube SEO</b> — title, description, hashtags\n"
+        "⚡ <b>Quality selection</b> — 480p / 720p / 1080p / 4K\n\n"
+        "🤖 <b>Auto Mode</b> — Send a YouTube link, AI finds the best clips\n\n"
+        "🛠 <b>Manual Mode</b> — Send link with timestamps for a custom clip\n\n"
+        "💡 <b>Format:</b> <code>&lt;URL&gt; &lt;start&gt; &lt;end&gt;</code>\n\n"
+        "📌 <b>Examples:</b>\n"
+        "<code>https://youtu.be/dQw4w9WgXcQ</code>  (auto)\n"
+        "<code>https://youtu.be/dQw4w9WgXcQ 1:30 2:45</code>  (manual)\n\n"
+        "⏱ Times: <code>M:SS</code> | <code>MM:SS</code> | <code>HH:MM:SS</code>"
     )
+    if os.path.exists(video_path):
+        with open(video_path, 'rb') as f:
+            await context.bot.send_video(
+                chat_id=update.effective_chat.id,
+                video=f,
+                caption=text,
+                parse_mode='html'
+            )
+    else:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text,
+            parse_mode='html'
+        )
 
 
 def main():
