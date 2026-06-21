@@ -206,9 +206,9 @@ async def _handle_manual_mode(update, context, message, uid, status, video_path,
         )
 
         caption = (
-            f"📝 Title:\n{seo['title']}\n\n"
-            f"📖 Description:\n{seo['description']}\n\n"
-            f"🏷 Hashtags:\n{seo['hashtags']}"
+            f"📝 Title:\n`{seo['title']}`\n\n"
+            f"📖 Description:\n`{seo['description']}`\n\n"
+            f"🏷 Hashtags:\n`{seo['hashtags']}`"
         )
 
         with open(output_path, 'rb') as f:
@@ -216,6 +216,7 @@ async def _handle_manual_mode(update, context, message, uid, status, video_path,
                 video=f,
                 filename=f'{status.name}_clip.mp4',
                 caption=caption,
+                parse_mode='markdown',
                 supports_streaming=True
             )
         await message.delete()
@@ -347,9 +348,9 @@ async def handle_clip_count(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
             caption = (
-                f"📝 Title:\n{seo['title']}\n\n"
-                f"📖 Description:\n{seo['description']}\n\n"
-                f"🏷 Hashtags:\n{seo['hashtags']}"
+                f"📝 Title:\n`{seo['title']}`\n\n"
+                f"📖 Description:\n`{seo['description']}`\n\n"
+                f"🏷 Hashtags:\n`{seo['hashtags']}`"
             )
 
             with open(output_path, 'rb') as f:
@@ -357,6 +358,7 @@ async def handle_clip_count(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     video=f,
                     filename=f'{status_name}_clip_{i+1}.mp4',
                     caption=caption,
+                    parse_mode='markdown',
                     supports_streaming=True
                 )
                 sent_count += 1
