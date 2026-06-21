@@ -60,3 +60,13 @@ def get_readable_message(status: ClipStatus) -> str:
     msg += f"<i>{status.name}</i> \n"
     msg += f"{status.status}\n"
     return msg
+
+
+def get_readable_time(seconds: float) -> str:
+    h = int(seconds // 3600)
+    m = int((seconds % 3600) // 60)
+    s = int(seconds % 60)
+    ms = int((seconds % 1) * 100)
+    if h > 0:
+        return f"{h}:{m:02d}:{s:02d}"
+    return f"{m}:{s:02d}"
