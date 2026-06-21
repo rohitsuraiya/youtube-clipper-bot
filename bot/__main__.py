@@ -24,7 +24,7 @@ import bot.clip as clip
 
 
 async def start(update, context):
-    video_path = os.path.join(os.path.dirname(__file__), '..', 'media', 'welcome.mp4')
+    image_path = os.path.join(os.path.dirname(__file__), '..', 'media', 'welcome.jpg')
     text = (
         "✂️ <b>AutoCut - AI Video Clipper</b>\n\n"
         "🧠 <b>AI-powered highlight detection</b> (Whisper + GPT)\n"
@@ -35,11 +35,11 @@ async def start(update, context):
         "⚡ <b>Quality selection</b> — 480p / 720p / 1080p / 4K\n\n"
         "🤖 <b>Auto Mode</b> — Send a YouTube link, AI finds the best clips"
     )
-    if os.path.exists(video_path):
-        with open(video_path, 'rb') as f:
-            await context.bot.send_video(
+    if os.path.exists(image_path):
+        with open(image_path, 'rb') as f:
+            await context.bot.send_photo(
                 chat_id=update.effective_chat.id,
-                video=f,
+                photo=f,
                 caption=text,
                 parse_mode='html'
             )
