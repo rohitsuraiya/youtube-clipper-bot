@@ -105,6 +105,13 @@ def format_keyboard():
     ])
 
 
+def auto_reframe_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("✅ Yes - Smart Auto Reframe", callback_data="reframe_on")],
+        [InlineKeyboardButton("❌ No - Basic Crop Only", callback_data="reframe_off")],
+    ])
+
+
 def confirm_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🚀 Start Processing", callback_data="start_job")],
@@ -121,6 +128,7 @@ def summary_text(draft):
         f"⚡ <b>Quality:</b> {draft.get('quality', '—')}\n"
         f"⏱ <b>Length:</b> {draft.get('length', '—')}\n"
         f"👤 <b>Face Tracking:</b> {'✅ On' if draft.get('face_tracking') else '❌ Off'}\n"
+        f"🔄 <b>Auto Reframe:</b> {'✅ On' if draft.get('auto_reframe') else '❌ Off'}\n"
         f"📱 <b>Format:</b> {draft.get('format', '—')}\n\n"
         "Ready to start?"
     )
@@ -305,9 +313,10 @@ async def face_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     context.user_data['face_tracking'] = query.data == 'face_on'
-    context.user_data['step'] = 'format'
-    await safe_edit(query, "📱 <b>Output Format</b>",
-                    reply_markup=format_keyboard())
+    context.user_data['step'] = 'reframe'
+    await safe_edit(query,
+        "🔄 <b>Auto Reframe?</b>\n\nSmart reframing keeps the speaker's eyes in the upper third and follows movement. Disable for basic center crop.",
+        reply_markup=auto_reframe_keyboard())
 
 
 async def format_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -319,6 +328,15 @@ async def format_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['step'] = 'confirm'
         await safe_edit(query, summary_text(context.user_data),
                         reply_markup=confirm_keyboard())
+
+
+async def reframe_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    context.user_data['auto_reframe'] = query.data == 'reframe_on'
+    context.user_data['step'] = 'format'
+    await safe_edit(query, "📱 <b>Output Format</b>",
+                    reply_markup=format_keyboard())
 
 
 async def start_job_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -389,6 +407,7 @@ def main():
     app.add_handler(CallbackQueryHandler(quality_callback, pattern='^quality_'))
     app.add_handler(CallbackQueryHandler(length_callback, pattern='^length_'))
     app.add_handler(CallbackQueryHandler(face_callback, pattern='^face_'))
+    app.add_handler(CallbackQueryHandler(reframe_callback, pattern='^reframe_'))
     app.add_handler(CallbackQueryHandler(format_callback, pattern='^format_'))
 
     app.add_handler(CallbackQueryHandler(start_job_callback, pattern='^start_job$'))

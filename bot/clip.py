@@ -8,7 +8,7 @@ from telegram.ext import ContextTypes
 from bot.status import ClipStatus
 import bot.utils as utils
 from bot.auto_clip import generate_clip_list, DetectedClip, generate_youtube_seo
-from bot.smart_crop import extract_smart_crop
+from bot.smart_crop import extract_smart_crop, extract_split_screen
 from bot.jobs import save_job, update_job
 
 YOUTUBE_REGEX = re.compile(
@@ -297,13 +297,28 @@ async def handle_clip_count(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         try:
             loop = asyncio.get_event_loop()
-            success = await loop.run_in_executor(
-                None,
-                lambda: extract_smart_crop(
-                    video_path, clip_seg.start, clip_seg.end,
-                    output_path, 1080, 1920
+            auto_reframe = context.user_data.get('auto_reframe', True)
+            face_tracking = context.user_data.get('face_tracking', False)
+            crop_enabled = face_tracking or auto_reframe
+
+            if crop_enabled:
+                success = await loop.run_in_executor(
+                    None,
+                    lambda: extract_smart_crop(
+                        video_path, clip_seg.start, clip_seg.end,
+                        output_path, 1080, 1920,
+                        auto_reframe=auto_reframe
+                    )
                 )
-            )
+            else:
+                success = await loop.run_in_executor(
+                    None,
+                    lambda: extract_smart_crop(
+                        video_path, clip_seg.start, clip_seg.end,
+                        output_path, 1080, 1920,
+                        auto_reframe=False
+                    )
+                )
             if not success:
                 logging.error(f"Smart crop failed for clip {i}")
                 continue
