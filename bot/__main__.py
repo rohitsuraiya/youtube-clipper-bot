@@ -26,6 +26,7 @@ from telegram.ext import (
 )
 from bot import BOT_TOKEN
 from bot.jobs import init_db, save_job, get_user_jobs
+import bot.clip as clip
 
 
 logger = logging.getLogger(__name__)
@@ -323,7 +324,6 @@ async def format_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def start_job_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer("🚀 Starting...")
-    import bot.clip as clip
     await clip.start_processing(update, context)
 
 
@@ -393,6 +393,7 @@ def main():
 
     app.add_handler(CallbackQueryHandler(start_job_callback, pattern='^start_job$'))
     app.add_handler(CallbackQueryHandler(cancel_job_callback, pattern='^cancel_job$'))
+    app.add_handler(CallbackQueryHandler(clip.handle_clip_count, pattern='^clipcount_'))
 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
