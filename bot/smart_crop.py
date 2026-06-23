@@ -182,7 +182,7 @@ def _smooth_positions(positions: List[Optional[Tuple[float, float]]],
         elif last_valid:
             result[i] = last_valid
 
-    return [(p[0], p[1]) for p in result]
+    return [(p[0], p[1]) if p is not None else None for p in result]
 
 
 def _compute_crop_for_face(face_center_x: float, face_center_y: float,
@@ -254,7 +254,10 @@ def extract_smart_crop(video_path: str, start: float, end: float, output_path: s
     logging.info(f"Smart crop: tracked {len([p for p in face_positions if p])}/{len(face_positions)} frames with faces")
 
     if has_faces and len(smoothed) > 0:
-        center_x, center_y = smoothed[len(smoothed) // 2]
+        valid_smoothed = [p for p in smoothed if p is not None]
+        if not valid_smoothed:
+            valid_smoothed = [(vw / 2, vh / 2)]
+        center_x, center_y = valid_smoothed[len(valid_smoothed) // 2]
         crop = _compute_crop_for_face(
             center_x, center_y, avg_fw, avg_fh,
             vw, vh, target_w, target_h,

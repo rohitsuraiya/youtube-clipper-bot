@@ -396,7 +396,7 @@ def detect_clips(video_path: str, top_n: int = 10, **kwargs) -> List[DetectedCli
             segments = transcribe_with_groq(audio_path)
             if segments and len(segments) > 2:
                 highlights = find_highlights_with_llm(segments, video_title)
-                if highlights:
+                if highlights and len(highlights) > 0:
                     clips = []
                     for h in highlights[:top_n]:
                         start = max(0, h["start"])
@@ -412,7 +412,10 @@ def detect_clips(video_path: str, top_n: int = 10, **kwargs) -> List[DetectedCli
                         logging.info(f"AI detected {len(clips)} clips")
                         return clips
                 else:
-                    logging.info("LLM returned no highlights")
+                    logging.info("LLM returned no highlights, using transcript segmentation")
+                    clips = _clips_from_transcript(segments, duration, top_n)
+                    if clips:
+                        return clips
             else:
                 seg_count = len(segments) if segments else 0
                 logging.info(f"Not enough speech segments ({seg_count}), using smart detect")
@@ -424,6 +427,44 @@ def detect_clips(video_path: str, top_n: int = 10, **kwargs) -> List[DetectedCli
 
     logging.info("Using smart audio/visual detection")
     return smart_detect(video_path, top_n)
+
+
+def _clips_from_transcript(segments: List[dict], duration: float, top_n: int = 10) -> List[DetectedClip]:
+    if not segments:
+        return []
+
+    clip_duration = 30.0
+    clips = []
+    i = 0
+    while i < len(segments) and len(clips) < top_n:
+        start = segments[i]["start"]
+        end = start
+        text_parts = []
+
+        while i < len(segments) and end - start < clip_duration:
+            end = segments[i]["end"]
+            text_parts.append(segments[i]["text"])
+            i += 1
+
+        if end - start < 10:
+            continue
+
+        text = " ".join(text_parts)
+        word_count = len(text.split())
+        if word_count < 5:
+            continue
+
+        energy = min(word_count / 40.0, 1.0)
+        clips.append(DetectedClip(
+            start=max(0, start - 1),
+            end=min(duration, end + 1),
+            score=energy,
+            label=f"Speech segment ({end - start:.0f}s)",
+        ))
+
+    clips.sort(key=lambda c: c.score, reverse=True)
+    logging.info(f"Transcript segmentation produced {len(clips)} clips")
+    return clips
 
 
 def generate_youtube_seo(video_title: str, clip_label: str, clip_start: float, clip_end: float) -> dict:
