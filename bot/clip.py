@@ -344,7 +344,8 @@ async def handle_clip_count(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
                 sent_count += 1
         except Exception as e:
-            logging.error(f"Failed to process clip {i}: {e}")
+            import traceback
+            logging.error(f"Failed to process clip {i}: {e}\n{traceback.format_exc()}")
         finally:
             if os.path.exists(output_path):
                 os.remove(output_path)
