@@ -241,7 +241,7 @@ def extract_smart_crop(video_path: str, start: float, end: float, output_path: s
         face_positions.append(None)
         face_sizes.append(None)
 
-    valid_sizes = [(w, h) for w, h in face_sizes if w is not None]
+    valid_sizes = [item for item in face_sizes if item is not None]
     if valid_sizes:
         avg_fw = np.mean([s[0] for s in valid_sizes])
         avg_fh = np.mean([s[1] for s in valid_sizes])
